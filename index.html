@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Mafia in PEPEtown</title>
+    <style>
+        *{
+            font-family: "Comic Sans MS";
+        }
+        .name{
+            height:40px;
+            font-size:20px;
+           
+        }
+        .rolq{
+            display:flex;
+        }
+        .stats{
+            display:flex;
+        }
+        .powerimg{
+            width:50px;
+            height:50px;
+            background: black;
+        }
+        .visists{
+            background: black;
+            width: 400px;
+        }
+        .rolq{
+            height:100px;
+        }
+        .ikonka{
+            width:100px;
+        }
+        .rolq > div{
+            margin:5px;
+        }
+        .selected{
+            border: 2px solid blue
+        }
+    </style>
+</head>
+<body>
+    <h1>Mafia in <span style="color:green;">PEPEtown</span></h1>
+    <div id="container">
+        <button onclick="resetnight()">Reset night</button>
+        <div class="rolq" v-for='rolq in roli'>
+            <input type="checkbox" name="" class="active" v-on:click="resort()" v-model="rolq.active" >
+            <button v-on:click="duplicate(rolq.id)">Duplicate</button>
+            <button v-on:click="remove(rolq.id)">Remove</button>
+            <img :src="rolq.logo" alt="" v-bind:class="{ikonka : true, selected : rolq.id==selected}" v-on:click="select(rolq.id)">
+            <div class="info">
+                <input type="text" class="name" v-model="rolq.player">
+                <div class="stats">
+                    <img :src="rolq.power" alt="" class="powerimg">
+                    <span class="uses">{{rolq.uses}}</span>
+                    <button v-on:click="add(rolq.id)">+</button>
+                    <button v-on:click="sub(rolq.id)">-</button>
+                </div>
+            </div>
+            <div class="visists" v-on:click="move(rolq.id)">
+                <img :src="vistor.logo" alt="" class="ikonka" v-for="vistor in rolq.visitors">
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+let data={
+    
+    roli:[
+        {id:1,rolqname:"Mayor",logo:"images/4c6.png",power:"",uses:0,active:false,visitors:[]},
+        {id:2,rolqname:"Doctor",logo:"images/9631_doctor_pepe.png",power:"powers/2h.jpg",uses:1,active:false,visitors:[]},
+        {id:3,rolqname:"Bodyguard",logo:"images/pepebg.png",power:"powers/3vest.png",uses:1,active:false,visitors:[]},
+        {id:4,rolqname:"Sheriff",logo:"images/pepecop.png",power:"",uses:0,active:false,visitors:[]},
+        {id:5,rolqname:"Godfather",logo:"images/PEPEGF.png",power:"powers/5immune59.jpg",uses:0,active:false,visitors:[]},
+        {id:6,rolqname:"Jester",logo:"images/pepejest.png",power:"",uses:0,active:false,visitors:[]},
+        {id:7,rolqname:"Mafioso",logo:"images/pepemafia.png",power:"",uses:0,active:false,visitors:[]},
+        {id:8,rolqname:"Escort",logo:"images/pepesex.png",power:"",uses:0,active:false,visitors:[]},
+        {id:9,rolqname:"Serial",logo:"images/pepesk.png",power:"powers/9immune59.jpg",uses:0,active:false,visitors:[]},
+        {id:10,rolqname:"Survivor",logo:"images/pepesurv.png",power:"powers/3vest.png",uses:3,active:false,visitors:[]},
+        {id:11,rolqname:"Veteran",logo:"images/pepevet.png",power:"powers/11gun.png",uses:2,active:false,visitors:[]},
+        {id:12,rolqname:"Villager",logo:"images/pepevillager.png",power:"",uses:0,active:false,visitors:[]},
+        {id:13,rolqname:"Lookout",logo:"images/peplo.png",power:"",uses:0,active:false,visitors:[]},
+        {id:14,rolqname:"Framer",logo:"images/pepeframer.png",power:"",uses:0,active:false,visitors:[]},
+    ],
+    selected:null
+}
+resort = ()=>{
+    console.log("resort");
+    // data.roli.sort((a,b)=>Math.random()-.5);
+    data.roli.sort((a,b)=>a.active <= b.active || -1);
+}
+resetnight=()=>{
+    data.roli.forEach(r=>{
+        r.visitors = [];
+    })
+}
+
+var app = new Vue({
+    el: '#container',
+    data:data,
+    methods:{
+        resort,
+        select:function(id){
+            console.log(id);
+            data.selected && data.selected == id?(data.selected=null):(data.selected=id)
+        },
+        move:function (id){
+            if(data.selected){
+                const dest = data.roli.find(e=>e.id==id);
+                const source = data.roli.find(e=>e.id==data.selected);
+                dest.visitors.push(source);
+                data.selected = null;
+            }
+        },
+        duplicate:function (id){
+            // debugger;
+
+            for (var a=0;a<data.roli.length;a++){
+                if(data.roli[a].id==id){
+                    for(var b=data.roli.length-1;b>=a;b--){
+                        data.roli[b+1] = JSON.parse(JSON.stringify(data.roli[b]));
+                    }
+                    data.roli[a+1].id+=Math.random()*.5;
+                    break;
+                }
+            }
+            data.roli.push(1)
+            data.roli.pop();
+        },
+        remove:function(id){
+            for (var a=0;a<data.roli.length;a++){
+                if(data.roli[a].id == id)
+                    data.roli.splice(a,1);
+            }
+        },
+        add:function(id){
+            const dest = data.roli.find(e=>e.id==id);
+            dest.uses++;
+        },
+        sub:function(id){
+            const dest = data.roli.find(e=>e.id==id);
+            dest.uses--;
+        }
+    }
+
+})
+</script>
+</html>
